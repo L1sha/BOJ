@@ -1,0 +1,144 @@
+#include "bits/stdc++.h"
+
+constexpr int N_MAX = 500;
+
+std::array<std::array<std::pair<int, int>, N_MAX>, N_MAX> map;
+std::array<std::vector<int>, N_MAX * N_MAX> adjL;
+
+int N;
+
+
+
+void fastIO() {
+    
+    std::ios_base::sync_with_stdio(false);
+    std::cin.tie(nullptr);
+    std::cout.tie(nullptr);
+}
+
+int coordinate(int row, int col) {
+    
+    return row * N - row / 2 + col;
+}
+
+void get_input() {
+    
+    std::cin >> N;
+    
+    for (int row = 0; row < N; ++row) {
+        
+        for (int col = 0; col < N - row % 2; ++col) {
+            
+            std::cin >> map[row][col].first >> map[row][col].second;
+            
+            if (col != 0 && map[row][col - 1].second == map[row][col].first) {
+                
+                adjL[coordinate(row, col)].push_back(coordinate(row, col - 1));
+                adjL[coordinate(row, col - 1)].push_back(coordinate(row, col));
+            }
+            
+            if (row != 0) {
+                
+                if (row % 2) {
+                    
+                    if (map[row - 1][col].second == map[row][col].first) {
+                        
+                        adjL[coordinate(row, col)].push_back(coordinate(row - 1, col));
+                        adjL[coordinate(row - 1, col)].push_back(coordinate(row, col));
+                    }
+                    
+                    if (map[row - 1][col + 1].first == map[row][col].second) {
+                        
+                        adjL[coordinate(row, col)].push_back(coordinate(row - 1, col + 1));
+                        adjL[coordinate(row - 1, col + 1)].push_back(coordinate(row, col));
+                    }
+                }
+                else {
+                    
+                    if (col != N - 1 && map[row - 1][col].first == map[row][col].second) {
+                        
+                        adjL[coordinate(row, col)].push_back(coordinate(row - 1, col));
+                        adjL[coordinate(row - 1, col)].push_back(coordinate(row, col));
+                    }
+                    
+                    if (col != 0 && map[row - 1][col - 1].second == map[row][col].first) {
+                        
+                        adjL[coordinate(row, col)].push_back(coordinate(row - 1, col - 1));
+                        adjL[coordinate(row - 1, col - 1)].push_back(coordinate(row, col));
+                    }
+                }
+            }
+        }
+    }
+}
+
+void solve() {
+    
+    std::queue<int> q;
+    std::vector<bool> inQ(N * N - N / 2);
+    std::vector<int> prev(N * N - N / 2, -1), dist(N * N - N / 2, N * N);
+    q.push(0);
+    inQ[0] = true;
+    prev[0] = 0;
+    dist[0] = 0;
+    
+    for (int cursor, curDist; !q.empty(); ) {
+        
+        cursor = q.front();
+        curDist = dist[cursor];
+        q.pop();
+        
+        for (const auto& next : adjL[cursor]) {
+            
+            if (curDist + 1 < dist[next]) {
+                
+                prev[next] = cursor;
+                dist[next] = curDist + 1;
+                
+                if (!inQ[next]) {
+                    
+                    inQ[next] = true;
+                    q.push(next);
+                }
+            }
+        }
+    }
+    
+    int res;
+    
+    for (int idx = N * N - N / 2 - 1; idx >= 0; --idx) {
+        
+        if (dist[idx] != N * N) {
+            
+            res = idx;
+            break;
+        }
+    }
+    
+    std::vector<int> path;
+    path.push_back(res);
+    
+    for (int cursor = res; cursor != 0; cursor = prev[cursor]) {
+        
+        path.push_back(prev[cursor]);
+    }
+    
+    std::cout << path.size() << '\n';
+    
+    for (auto it = path.crbegin(); it != path.crend(); ++it) {
+        
+        std::cout << (*it) + 1 << ' ';
+    }
+}
+
+
+
+int main(int argc, char** argv) {
+    
+    fastIO();
+    get_input();
+    solve();
+    
+    return 0;
+}
+

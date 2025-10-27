@@ -1,0 +1,95 @@
+#include "bits/stdc++.h"
+
+int N, M, K;
+std::string S;
+
+std::vector<std::vector<char>> map;
+std::vector<std::vector<std::vector<int>>> res;
+
+
+void fastIO() {
+    
+    std::ios_base::sync_with_stdio(false);
+    std::cin.tie(nullptr);
+    std::cout.tie(nullptr);
+}
+
+void get_input() {
+    
+    std::cin >> N >> M >> K;
+    
+    map.clear();
+    map.resize(N, std::vector<char>(M));
+    
+    for (auto& row : map) {
+        
+        for (auto& el : row) {
+            
+            std::cin >> el;
+        }
+    }
+    
+    std::cin >> S;
+}
+
+void solve() {
+    
+    res.clear();
+    res.resize(S.size(), std::vector<std::vector<int>>(N, std::vector<int>(M)));
+    
+    for (int row = 0; row < N; ++row) {
+        
+        for (int col = 0; col < M; ++col) {
+            
+            if (map[row][col] == S[0]) res[0][row][col] = 1;
+        }
+    }
+    
+    for (int idx = 1; idx < S.size(); ++idx) {
+        
+        for (int row = 0; row < N; ++row) {
+            
+            for (int col = 0; col < M; ++col) {
+                
+                if (map[row][col] == S[idx - 1]) {
+                    
+                    std::vector<std::pair<int, int>> candidate;
+                    candidate.reserve(4 * K);
+                    
+                    for (int dist = 1; dist <= K; ++dist) {
+                        
+                        candidate.push_back({row - dist, col});
+                        candidate.push_back({row + dist, col});
+                        candidate.push_back({row, col - dist});
+                        candidate.push_back({row, col + dist});
+                    }
+                    
+                    for (const auto& [nRow, nCol] : candidate) {
+                        
+                        if (nRow < 0 || nRow >= N || nCol < 0 || nCol >= M) continue;
+                        
+                        if (map[nRow][nCol] == S[idx]) res[idx][nRow][nCol] += res[idx - 1][row][col];
+                    }
+                }
+            }
+        }
+    }
+    
+    std::cout << std::accumulate(res.back().begin(), res.back().end(), 0,
+        [](int acc, const std::vector<int>& row) {
+            
+            return acc + std::accumulate(row.begin(), row.end(), 0);
+        });
+}
+
+
+
+int main(int argc, char** argv) {
+    
+    fastIO();
+    get_input();
+    solve();
+    
+    return 0;
+}
+
